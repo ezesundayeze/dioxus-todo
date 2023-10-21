@@ -1,7 +1,7 @@
 use dioxus::{html::input_data::keyboard_types::Key, prelude::*};
 
 /// Define a type for Todos, which is an immutable HashMap of u32 keys to TodoItem values.
-pub type Todos = im_rc::HashMap<u32, TodoItem>;
+pub type Todos = im::HashMap<u32, TodoItem>;
 
 /// Define the structure for a TodoItem, which has an id and contents.
 #[derive(Debug, PartialEq, Clone)]
@@ -14,19 +14,19 @@ pub struct TodoItem {
 /// This function initializes the main application and manages todos, new todo input, and todo IDs.
 pub fn app(cx: Scope<()>) -> Element {
     // Create references for todos, new_todo_item, and todo_id.
-    let todos: &UseRef<im_rc::HashMap<u32, TodoItem>> =
+    let todos: &UseRef<im::HashMap<u32, TodoItem>> =
         use_ref(cx, || {
-            let mut default_todos = im_rc::HashMap::<u32, TodoItem>::default();
+            let mut default_todos = im::HashMap::<u32, TodoItem>::default();
             // Add a default todo item.
-            default_todos.insert(0, TodoItem { id: 0, contents: "Cut Onion".to_string() });
+            // default_todos.insert(0, TodoItem { id: 0, contents: "Cut Onion".to_string() });
             default_todos
         });
     let new_todo_item: &UseRef<String> = use_ref(cx, String::new);
-    let todo_id: &UseState<u32> = use_state(cx, || 1); // Start with 1 to avoid conflicting with the default.
+    let todo_id: &UseState<u32> = use_state(cx, || 0); 
 
     // Render the app using rsx! macro.
     cx.render(rsx! {
-        section { class: "todoapp",
+        section { class: "todo-app",
             style { include_str!("./style.css") }
             div {
                 header { class: "header",
@@ -43,7 +43,7 @@ pub fn app(cx: Scope<()>) -> Element {
 /// Define the properties structure for TodoInput.
 #[derive(Props, PartialEq)]
 pub struct TodoInputProps<'a> {
-    todos: UseRef<im_rc::HashMap<u32, TodoItem>>,
+    todos: UseRef<im::HashMap<u32, TodoItem>>,
     new_todo_item: &'a UseRef<String>,
     todo_id: &'a UseState<u32>,
 }
@@ -80,7 +80,7 @@ pub fn todo_input<'a>(cx: Scope<'a, TodoInputProps>) -> Element<'a> {
 /// Define the properties structure for TodoList.
 #[derive(Props, PartialEq)]
 pub struct TodoListProps {
-    todos: UseRef<im_rc::HashMap<u32, TodoItem>>,
+    todos: UseRef<im::HashMap<u32, TodoItem>>,
 }
 
 /// Define the todo_list function that returns an Element.
@@ -91,9 +91,6 @@ pub fn todo_list<'a>(cx: Scope<'a, TodoListProps>) -> Element {
     cx.props.todos.read().iter().map(|(id, _todo)| {
         rsx! { todo_entry { key: "{id}", id: *id, set_todos: &cx.props.todos } }
     })
-    // .collect::<Vec<_>>()
-    // .into_iter()
-    // .rev()
     }
     })
 }
@@ -109,7 +106,7 @@ pub struct TodoEntryProps<'a> {
 /// This function renders a single todo entry.
 pub fn todo_entry<'a>(cx: Scope<'a, TodoEntryProps<'a>>) -> Element {
     // Retrieve the todos and the current todo using the provided id.
-    let todos: std::cell::Ref<'_, im_rc::HashMap<u32, TodoItem>> = cx.props.set_todos.read();
+    let todos: std::cell::Ref<'_, im::HashMap<u32, TodoItem>> = cx.props.set_todos.read();
     let todo: &TodoItem = &todos[&cx.props.id];
 
     // Render a list item with the todo's contents and a delete button.
@@ -117,7 +114,7 @@ pub fn todo_entry<'a>(cx: Scope<'a, TodoEntryProps<'a>>) -> Element {
         div { class: "view",
             label { "{todo.contents}" }
             button {
-                class: "destroy",
+                class: "remove",
                 onclick: move |_| {
                     cx.props.set_todos.write().remove(&cx.props.id);
                 }
