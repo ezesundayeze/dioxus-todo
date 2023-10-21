@@ -2,7 +2,7 @@
 name = "todo_app"
 default_platform = "web"
 out_dir = "docs"
-base_path = "https://github.com/ezesundayeze/dioxus-todo"
+base_path = "dioxus-todo"
 
 [web.app]
 title = "Todo App"
